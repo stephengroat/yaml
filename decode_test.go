@@ -1703,6 +1703,24 @@ func (s *S) TestUnmarshalKnownFields(c *C) {
 	}
 }
 
+func (s *S) TestUnmarshalDisableExcessiveAlias(c *C) {
+	// First test that normal Unmarshal unmarshals to the expected value.
+	var out interface{}
+	dec := yaml.NewDecoder(bytes.NewBuffer(
+		[]byte("a: &a [00,00,00,00,00,00,00,00,00]\n" +
+			"b: &b [*a,*a,*a,*a,*a,*a,*a,*a,*a]\n" +
+			"c: &c [*b,*b,*b,*b,*b,*b,*b,*b,*b]\n" +
+			"d: &d [*c,*c,*c,*c,*c,*c,*c,*c,*c]\n" +
+			"e: &e [*d,*d,*d,*d,*d,*d,*d,*d,*d]\n" +
+			"f: &f [*e,*e,*e,*e,*e,*e,*e,*e,*e]\n" +
+			"g: &g [*f,*f,*f,*f,*f,*f,*f,*f,*f]\n" +
+			"h: &h [*g,*g,*g,*g,*g,*g,*g,*g,*g]\n" +
+			"i: &i [*h,*h,*h,*h,*h,*h,*h,*h,*h]\n")))
+	dec.DisableExcessiveAlias(true)
+	err := dec.Decode(&out)
+	c.Assert(err, Equals, nil)
+}
+
 type textUnmarshaler struct {
 	S string
 }

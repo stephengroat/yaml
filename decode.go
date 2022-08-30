@@ -318,11 +318,12 @@ type decoder struct {
 	stringMapType  reflect.Type
 	generalMapType reflect.Type
 
-	knownFields bool
-	uniqueKeys  bool
-	decodeCount int
-	aliasCount  int
-	aliasDepth  int
+	knownFields           bool
+	disableExcessiveAlias bool
+	uniqueKeys            bool
+	decodeCount           int
+	aliasCount            int
+	aliasDepth            int
 
 	mergedFields map[interface{}]bool
 }
@@ -486,7 +487,7 @@ func (d *decoder) unmarshal(n *Node, out reflect.Value) (good bool) {
 	if d.aliasDepth > 0 {
 		d.aliasCount++
 	}
-	if d.aliasCount > 100 && d.decodeCount > 1000 && float64(d.aliasCount)/float64(d.decodeCount) > allowedAliasRatio(d.decodeCount) {
+	if d.aliasCount > 100 && d.decodeCount > 1000 && float64(d.aliasCount)/float64(d.decodeCount) > allowedAliasRatio(d.decodeCount) && !d.disableExcessiveAlias {
 		failf("document contains excessive aliasing")
 	}
 	if out.Type() == nodeType {
